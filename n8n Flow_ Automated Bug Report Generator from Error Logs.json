@@ -1,0 +1,157 @@
+{
+  "name": "n8n Flow: Automated Bug Report Generator from Error Logs",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "56897833-ec10-48ba-8763-bea9c70ca758",
+      "name": "When chat message received",
+      "webhookId": "65e89cec-61cb-4992-b9d3-78865ee24837"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a QA Engineer. Your task is to transform the user’s error log text into a structured bug report.\n• \tDo not ask for additional input.\n• \tDo not explain your process.\n• \tDo not repeat instructions.\n• \tAlways output ONLY the bug report in the exact format below.\nBug Report Format:\n• \tTitle: [Short descriptive title from log or [UNKNOWN]]\n• \tSeverity: [Critical / High / Medium / Low / [UNKNOWN]]\n• \tSteps to Reproduce:\n• \t[Step 1 based on log data or [UNKNOWN]]\n• \t[Step 2 based on log data or [UNKNOWN]]\n• \tExpected Result: [Expected behavior from log or [UNKNOWN]]\n• \tActual Result: [Actual behavior from log or [UNKNOWN]]\nConstraints:\n• \tUse ONLY the error log text provided in the user input.\n• \tNever request more information.\n• \tNever hallucinate or add assumptions.\n• \tIf a field is missing, mark it as [UNKNOWN].\nError Log: {{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d7a361bc-7faf-4913-835e-50d161554e09",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        304,
+        224
+      ],
+      "id": "eadc9108-d62c-41ec-a183-42d66c0e48e4",
+      "name": "Groq Chat Model",
+      "retryOnFail": true,
+      "credentials": {
+        "groqApi": {
+          "id": "6kAWXv8NfyghjEIZ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Title\": \"[Short descriptive title from log or [UNKNOWN]\",\n\t\"Severity\": \"[Critical / High / Medium / Low / [UNKNOWN]]\",\n  \"Steps to Reproduce\": \"Steps\",\n  \"Expected Result\": \"Expected\",\n  \"Actual Result\": \"Actual\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        208
+      ],
+      "id": "d977622b-2562-4339-90ff-4c779d440115",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "426c02e0-a63c-495d-9b5c-dee18bfa2109",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        0
+      ],
+      "id": "aaae414a-0117-4375-b11b-4080dd2127e4",
+      "name": "Output"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ed01208b-fdb2-4ec0-9d31-30c4f074d109",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "247214503266fb30d2be3b3d38bb62812690fc26e08945bbaf4e838db41fd6df"
+  },
+  "id": "uhys7siv1oAtN809",
+  "tags": []
+}
